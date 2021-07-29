@@ -106,6 +106,9 @@ func (b definitionBuilder) addModel(st reflect.Type, nameOverride string) *spec.
 		}
 	}
 
+	//sm.Properties[jsonName] = prop
+
+
 	// We always overwrite documentation if SwaggerDoc method exists
 	// "" is special for documenting the struct itself
 	if modelDoc, ok := fullDoc[""]; ok {
@@ -311,7 +314,20 @@ func (b definitionBuilder) buildArrayTypeProperty(field reflect.StructField, jso
 	if !isPrimitive {
 		b.addModel(fieldType.Elem(), elemTypeName)
 	}
+	if prop.Default != nil {
+		prop.Default = convertArrayTypeDefault((prop.Default).(string))
+	}
 	return jsonName, prop
+}
+
+// convert ArrayType default
+func convertArrayTypeDefault(defaultString string) (sliceDefault []string) {
+	if strings.Contains(defaultString, "|") {
+		sliceDefault = strings.Split(defaultString, "|")
+	} else {
+		sliceDefault = append(sliceDefault, defaultString)
+	}
+	return
 }
 
 func (b definitionBuilder) buildMapTypeProperty(field reflect.StructField, jsonName, modelName string) (nameJson string, prop spec.Schema) {
